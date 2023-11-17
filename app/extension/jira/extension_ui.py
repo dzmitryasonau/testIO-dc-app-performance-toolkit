@@ -10,15 +10,29 @@ from selenium_ui.jira.pages.pages import Login
 from util.conf import JIRA_SETTINGS
 
 project_key = 'AASSS'
-wait_timeout = 30
-small_wait_timeout = 15
-number_of_attempts = 5
+wait_timeout = 100
+small_wait_timeout = 50
+number_of_attempts = 10
 
 
 def create_exploratory_test(webdriver):
     page = BasePage(webdriver)
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#tests")
     test_title = "Test " + ''.join(random.choice(string.ascii_lowercase) for i in range(8))
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_invisible((By.XPATH, "//*[text()='No bugs found']"), wait_timeout)
+            page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), wait_timeout).click()
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Received Bugs')]"),
+                wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#tests")
 
     for k in range(number_of_attempts):
         try:
@@ -157,9 +171,21 @@ def view_exploratory_test(webdriver):
 
     for k in range(number_of_attempts):
         try:
-            page.wait_until_visible((By.ID, "tio_menu-item_exploratory-tests"), 10).click()
+            page.wait_until_invisible((By.XPATH, "//*[text()='No bugs found']"), wait_timeout)
+            page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), wait_timeout).click()
             page.wait_until_visible(
-                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), 10)
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Received Bugs')]"),
+                wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible((By.ID, "tio_menu-item_exploratory-tests"), wait_timeout).click()
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), wait_timeout)
             page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
             break
         except TimeoutException:
@@ -205,32 +231,34 @@ def view_user_stories(webdriver):
 
     for k in range(number_of_attempts):
         try:
-            page.wait_until_invisible((By.XPATH, "//*[text()='No bugs found']"), wait_timeout)
-            page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), 10).click()
+            page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), wait_timeout).click()
             page.wait_until_visible(
-                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
-                small_wait_timeout)
-            page.wait_until_visible((By.ID, "tio_menu-item_exploratory-tests"), 10).click()
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Received Bugs')]"),
+                wait_timeout)
             break
         except TimeoutException:
             webdriver.refresh()
             print('TimeoutException handled')
 
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#stories")
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
+                wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), wait_timeout).click()
+            print('TimeoutException handled')
+
     @print_timing("selenium_view_user_stories:open_stories_page")
     def measure():
-        for i in range(number_of_attempts):
-            try:
-                page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), 10).click()
-                page.wait_until_visible(
-                    (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
-                    small_wait_timeout)
-                break
-            except TimeoutException:
-                webdriver.refresh()
-                page.wait_until_visible((By.ID, "tio_menu-item_user-stories"),
-                                        10).click()
-                print('TimeoutException handled')
-
+        page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), wait_timeout).click()
+        page.wait_until_visible(
+            (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
+            small_wait_timeout)
     measure()
 
     for k in range(number_of_attempts):
@@ -266,10 +294,10 @@ def app_accept_testio_bug(webdriver):
     for k in range(number_of_attempts):
         try:
             page.wait_until_invisible((By.XPATH, "//*[text()='No bugs found']"), wait_timeout)
-            page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), 10).click()
+            page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), wait_timeout).click()
             page.wait_until_visible(
                 (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Received Bugs')]"),
-                small_wait_timeout)
+                wait_timeout)
             break
         except TimeoutException:
             webdriver.refresh()
