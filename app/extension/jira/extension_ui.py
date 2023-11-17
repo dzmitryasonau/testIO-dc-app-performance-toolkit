@@ -1,5 +1,7 @@
 import random
+import string
 
+from selenium.common import TimeoutException, ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 
 from selenium_ui.base_page import BasePage
@@ -7,38 +9,415 @@ from selenium_ui.conftest import print_timing
 from selenium_ui.jira.pages.pages import Login
 from util.conf import JIRA_SETTINGS
 
+project_key = 'AASSS'
+wait_timeout = 30
+small_wait_timeout = 15
+number_of_attempts = 5
 
-def app_specific_action(webdriver, datasets):
+
+def create_exploratory_test(webdriver):
     page = BasePage(webdriver)
-    if datasets['custom_issues']:
-        issue_key = datasets['custom_issue_key']
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#tests")
+    test_title = "Test " + ''.join(random.choice(string.ascii_lowercase) for i in range(8))
 
-    # To run action as specific user uncomment code bellow.
-    # NOTE: If app_specific_action is running as specific user, make sure that app_specific_action is running
-    # just before test_2_selenium_z_log_out action
-    #
-    # @print_timing("selenium_app_specific_user_login")
-    # def measure():
-    #     def app_specific_user_login(username='admin', password='admin'):
-    #         login_page = Login(webdriver)
-    #         login_page.delete_all_cookies()
-    #         login_page.go_to()
-    #         login_page.set_credentials(username=username, password=password)
-    #         if login_page.is_first_login():
-    #             login_page.first_login_setup()
-    #         if login_page.is_first_login_second_page():
-    #             login_page.first_login_second_page_setup()
-    #         login_page.wait_for_page_loaded()
-    #     app_specific_user_login(username='admin', password='admin')
-    # measure()
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible((By.XPATH, "//span[contains(@class,'createButton')]"), wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
 
-    @print_timing("selenium_app_custom_action")
+    @print_timing("selenium_create_exploratory_test:start_creation")
     def measure():
-        @print_timing("selenium_app_custom_action:view_issue")
-        def sub_measure():
-            page.go_to_url(f"{JIRA_SETTINGS.server_url}/browse/{issue_key}")
-            page.wait_until_visible((By.ID, "summary-val"))  # Wait for summary field visible
-            page.wait_until_visible((By.ID, "ID_OF_YOUR_APP_SPECIFIC_UI_ELEMENT"))  # Wait for you app-specific UI element by ID selector
-        sub_measure()
+        for j in range(number_of_attempts):
+            try:
+                page.wait_until_visible((By.XPATH, "//span[contains(@class,'createButton')]"), wait_timeout).click()
+                break
+            except TimeoutException:
+                webdriver.refresh()
+                print('TimeoutException handled')
+
+    measure()
+
+    for k in range(10):
+        try:
+            page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), wait_timeout)
+            page.action_chains().move_to_element(
+                page.get_element((By.XPATH, "//label[text()='Product']/../div")))
+            page.wait_until_visible((By.XPATH, "//label[text()='Product']/../div"), wait_timeout).click()
+            page.wait_until_invisible((By.XPATH,
+                                       "//label[text()='Product']/..//div[@type='dropdown']/div[text()='No options']"),
+                                      small_wait_timeout)
+            page.wait_until_visible((By.XPATH,
+                                     "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),"
+                                     "'Jira')]"),
+                                    small_wait_timeout)
+            page.action_chains() \
+                .move_to_element(
+                page.get_element((By.XPATH,
+                                  "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),"
+                                  "'Jira')]"))) \
+                .click(
+                page.get_element((By.XPATH,
+                                  "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),"
+                                  "'Jira')]"))) \
+                .perform()
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            for j in range(number_of_attempts):
+                try:
+                    page.wait_until_visible((By.XPATH, "//span[contains(@class,'createButton')]"), wait_timeout).click()
+                    break
+                except TimeoutException:
+                    webdriver.refresh()
+                    print('TimeoutException handled')
+            print('TimeoutException handled')
+        except Exception:
+            webdriver.refresh()
+            for j in range(number_of_attempts):
+                try:
+                    page.wait_until_visible((By.XPATH, "//span[contains(@class,'createButton')]"), wait_timeout).click()
+                    break
+                except TimeoutException:
+                    webdriver.refresh()
+                    print('TimeoutException handled')
+            print('Exception handled')
+
+    @print_timing("selenium_create_exploratory_test:select_product")
+    def measure():
+        page.wait_until_visible((By.XPATH, "//label[text()='Product']/../div"), wait_timeout).click()
+        page.action_chains() \
+            .move_to_element(
+            page.get_element((By.XPATH,
+                              "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),'Jira')]")
+                             )) .click(page.get_element((By.XPATH,
+                                     "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),"
+                                     "'Jira')]"))).perform()
+
+    measure()
+
+    @print_timing("selenium_create_exploratory_test:select_section")
+    def measure():
+        page.wait_until_visible((By.XPATH, "//label[text()='Section']/../div"),
+                                wait_timeout).click()
+        page.wait_until_visible(
+            (By.XPATH, "//label[text()='Section']/..//div[contains(@class, 'item')]"),
+            wait_timeout)
+        page.get_elements(
+            (By.XPATH, "//label[text()='Section']/..//div[contains(@class, 'item')]"))[
+            1].click()
+
+    measure()
+
+    @print_timing("selenium_create_exploratory_test:select_test_type")
+    def measure():
+        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), wait_timeout)
+        page.wait_until_visible((By.XPATH, "//span[contains(@class, 'coverage')]/.."), wait_timeout).click()
+
+    measure()
+
+    @print_timing("selenium_create_exploratory_test:fill_test_data")
+    def measure():
+        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), wait_timeout)
+        page.wait_until_visible((By.XPATH, "//input[@name='test_title']"), wait_timeout).send_keys(
+            test_title)
+        page.wait_until_visible((By.XPATH, "//label[text()='Environment']/../div"),
+                                wait_timeout).click()
+        page.wait_until_visible(
+            (By.XPATH, "//label[text()='Environment']/..//div[contains(@class,'item')]"),
+            wait_timeout)
+        page.get_elements(
+            (By.XPATH, "//label[text()='Environment']/..//div[contains(@class,'item')]"))[
+            1].click()
+        page.wait_until_visible((By.XPATH, "//div[contains(@class,'featureCheckbox')]"),
+                                wait_timeout)
+        page.get_elements((By.XPATH, "//div[contains(@class,'featureCheckbox')]"))[1].click()
+
+    measure()
+
+    @print_timing("selenium_create_exploratory_test:cancel_test_creation")
+    def measure():
+        page.wait_until_visible((By.XPATH, "//span[text()='Cancel']"), wait_timeout).click()
+        page.wait_until_visible((By.XPATH, "//span[text()='Leave']"), wait_timeout).click()
+
+    measure()
+
+    @print_timing("selenium_create_exploratory_test:check_presence_start_creation")
+    def measure():
+        page.wait_until_visible((By.XPATH, "//span[contains(@class,'createButton')]"), wait_timeout)
+
+    measure()
+
+
+def view_exploratory_test(webdriver):
+    page = BasePage(webdriver)
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#tests")
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible((By.ID, "tio_menu-item_exploratory-tests"), 10).click()
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), 10)
+            page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+
+    @print_timing("selenium_view_exploratory_test:open_test")
+    def measure():
+        page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
+        page.get_elements((By.XPATH, "//span[text()='View']"))[1].click()
+
+    measure()
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible((By.XPATH, "//div[text()='Test details']"), wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), 10).click()
+            page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
+            page.get_elements((By.XPATH, "//span[text()='View']"))[1].click()
+            print('TimeoutException handled')
+
+    @print_timing("selenium_view_exploratory_test:check_sections_present")
+    def measure():
+        for j in range(number_of_attempts):
+            try:
+                page.wait_until_visible((By.XPATH, "//div[text()='Test details']"), wait_timeout)
+                page.wait_until_visible((By.XPATH, "//div[text()='Testers']"), wait_timeout)
+                page.wait_until_visible((By.XPATH, "//div[text()='Where to test']"), wait_timeout)
+                break
+            except TimeoutException:
+                print('TimeoutException handled')
+
+    measure()
+
+
+def view_user_stories(webdriver):
+    page = BasePage(webdriver)
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#stories")
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_invisible((By.XPATH, "//*[text()='No bugs found']"), wait_timeout)
+            page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), 10).click()
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
+                small_wait_timeout)
+            page.wait_until_visible((By.ID, "tio_menu-item_exploratory-tests"), 10).click()
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+
+    @print_timing("selenium_view_user_stories:open_stories_page")
+    def measure():
+        for i in range(number_of_attempts):
+            try:
+                page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), 10).click()
+                page.wait_until_visible(
+                    (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
+                    small_wait_timeout)
+                break
+            except TimeoutException:
+                webdriver.refresh()
+                page.wait_until_visible((By.ID, "tio_menu-item_user-stories"),
+                                        10).click()
+                print('TimeoutException handled')
+
+    measure()
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_invisible((By.XPATH, "//div[contains(@class,'loader')]"), wait_timeout * 2)
+            page.wait_until_visible((By.XPATH, "//div[contains(@class, 'story')]//div[contains(@class, 'grow')]"))
+            break
+        except TimeoutException:
+            print('TimeoutException handled')
+
+    @print_timing("selenium_view_user_stories:open_story_executions")
+    def measure():
+        for i in range(number_of_attempts):
+            try:
+                page.get_elements((By.XPATH, "//div[contains(@class, 'story')]//div[contains(@class, 'grow')]"))[
+                    1].click()
+                page.wait_until_visible(
+                    (By.XPATH, "//div[contains(@class, 'executionsPanel')]//div[contains(@class, 'title')]"),
+                    wait_timeout)
+                break
+            except TimeoutException:
+                page.wait_until_invisible((By.XPATH, "//div[contains(@class,'loader')]"), wait_timeout * 2)
+                page.wait_until_visible((By.XPATH, "//div[contains(@class, 'story')]//div[contains(@class, 'grow')]"))
+                print('TimeoutException handled')
+
+    measure()
+
+
+def app_accept_testio_bug(webdriver):
+    page = BasePage(webdriver)
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#bugs")
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_invisible((By.XPATH, "//*[text()='No bugs found']"), wait_timeout)
+            page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), 10).click()
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Received Bugs')]"),
+                small_wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+
+    @print_timing("selenium_app_accept_testio_bug")
+    def measure():
+        for i in range(number_of_attempts):
+            try:
+                page.wait_until_visible(
+                    (By.XPATH, "//div[contains(@class,'issueDetails')]//span[contains(@class, 'accept')]"),
+                    wait_timeout).click()
+                break
+            except TimeoutException:
+                webdriver.refresh()
+                print('TimeoutException handled')
+
+    measure()
+
+
+def app_change_severity_testio_bug(webdriver):
+    page = BasePage(webdriver)
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues")
+
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible((By.XPATH, "//div[contains(@class, 'scrollableContent')]//h1"),
+                                    wait_timeout)
+            page.wait_until_visible(
+                (By.XPATH, "//span[contains(@class, 'secondary') and text()='More']"),
+                number_of_attempts).click()
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+
+    @print_timing("selenium_app_change_severity_testio_bug")
+    def measure():
+        for j in range(number_of_attempts):
+            try:
+                number_of_issues = len(page.get_elements(
+                    (By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]")))
+                for i in range(2, number_of_issues):
+                    try:
+                        page.wait_until_visible(
+                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Change severity']"),
+                            number_of_attempts).click()
+                        page.wait_until_visible((By.XPATH, "//input[@name='new_severity']/.."), wait_timeout).click()
+                        page.wait_until_visible(
+                            (By.XPATH, "//input[@name='new_severity']/..//div[contains(@class,'item')]"),
+                            wait_timeout)
+                        page.get_elements((By.XPATH, "//input[@name='new_severity']/..//div[contains(@class,'item')]"))[
+                            1].click()
+
+                        page.wait_until_visible((By.XPATH, "//textarea[@name='comment']"), wait_timeout).send_keys(
+                            "New severity")
+                        page.wait_until_visible((By.XPATH, "//span[@type='button' and text()='Change']"),
+                                                wait_timeout).click()
+                        break
+                    except TimeoutException:
+                        page.get_elements((By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]"))[
+                            i].click()
+                        print('TimeoutException handled')
+                break
+            except TimeoutException:
+                webdriver.refresh()
+                page.wait_until_visible((By.XPATH, "//div[contains(@class, 'scrollableContent')]//h1"),
+                                        wait_timeout)
+                page.wait_until_visible(
+                    (By.XPATH, "//span[contains(@class, 'secondary') and text()='More']"),
+                    number_of_attempts).click()
+                print('TimeoutException handled')
+
+    measure()
+
+
+def app_send_request_testio_bug(webdriver):
+    page = BasePage(webdriver)
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues")
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible((By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                                    wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+        except ElementClickInterceptedException:
+            webdriver.refresh()
+            print('ElementClickInterceptedException handled')
+
+    @print_timing("selenium_app_send_request_testio_bug")
+    def measure():
+        for j in range(number_of_attempts):
+            try:
+                number_of_issues = len(page.get_elements(
+                    (By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]")))
+                for i in range(2, number_of_issues):
+                    page.wait_until_visible(
+                        (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                        wait_timeout)
+                    if "disabled" in page.get_element(
+                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']")) \
+                            .get_attribute('class'):
+                        page.get_elements((By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]"))[
+                            i].click()
+
+                    else:
+                        page.wait_until_visible(
+                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                            wait_timeout).click()
+                        page.wait_until_visible((By.XPATH, "//textarea[@name='comment']"), wait_timeout) \
+                            .send_keys("User request")
+                        page.wait_until_visible((By.XPATH, "//span[@type='button' and text()='Send']"),
+                                                wait_timeout).click()
+                        break
+                break
+            except TimeoutException:
+                webdriver.refresh()
+                page.wait_until_visible((By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                                        wait_timeout)
+                print('TimeoutException handled')
+            except ElementClickInterceptedException:
+                webdriver.refresh()
+                page.wait_until_visible((By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                                        wait_timeout)
+                print('ElementClickInterceptedException handled')
+
+    measure()
+
+
+def view_testio_specific_bug(webdriver):
+    page = BasePage(webdriver)
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#bugs")
+    for k in range(number_of_attempts):
+        try:
+            page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), wait_timeout).click()
+            page.wait_until_visible((By.XPATH, "//div[text()='Received Bugs']"), wait_timeout)
+            break
+        except TimeoutException:
+            webdriver.refresh()
+            print('TimeoutException handled')
+
+    @print_timing("selenium_view_testio_specific_bug")
+    def measure():
+        page.wait_until_visible(
+            (By.XPATH, "//div[contains(@class,'issuesList')]//div[contains(@class,'issue')]"),
+            wait_timeout)
+
     measure()
 
