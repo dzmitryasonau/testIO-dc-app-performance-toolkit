@@ -18,6 +18,7 @@ number_of_attempts = 10
 def create_exploratory_test(webdriver):
     page = BasePage(webdriver)
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues")
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#tests")
     test_title = "Test " + ''.join(random.choice(string.ascii_lowercase) for i in range(8))
 
@@ -110,10 +111,12 @@ def create_exploratory_test(webdriver):
 def view_exploratory_test(webdriver):
     page = BasePage(webdriver)
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues")
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#tests")
 
     for k in range(number_of_attempts):
         try:
+            page.wait_until_visible((By.ID, "tio_menu-item_exploratory-tests"), wait_timeout).click()
             page.wait_until_visible(
                 (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), wait_timeout)
             page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
@@ -158,22 +161,22 @@ def view_exploratory_test(webdriver):
 def view_user_stories(webdriver):
     page = BasePage(webdriver)
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues")
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#stories")
 
     for k in range(number_of_attempts):
         try:
+            page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), wait_timeout).click()
             page.wait_until_visible(
                 (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
                 wait_timeout)
             break
         except TimeoutException:
             webdriver.refresh()
-            page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), wait_timeout).click()
             print('TimeoutException handled')
 
     @print_timing("selenium_view_user_stories:open_stories_page")
     def measure():
-        page.wait_until_visible((By.ID, "tio_menu-item_user-stories"), wait_timeout).click()
         page.wait_until_visible(
             (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
             small_wait_timeout)
@@ -208,6 +211,7 @@ def view_user_stories(webdriver):
 def app_accept_testio_bug(webdriver):
     page = BasePage(webdriver)
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues")
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#bugs")
 
     for k in range(number_of_attempts):
@@ -353,7 +357,9 @@ def app_send_request_testio_bug(webdriver):
 def view_testio_specific_bug(webdriver):
     page = BasePage(webdriver)
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
+    page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues")
     page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#bugs")
+
     for k in range(number_of_attempts):
         try:
             page.wait_until_visible((By.ID, "tio_menu-item_received-bugs"), wait_timeout).click()
@@ -362,6 +368,16 @@ def view_testio_specific_bug(webdriver):
         except TimeoutException:
             webdriver.refresh()
             print('TimeoutException handled')
+
+    try:
+        page.wait_until_visible(
+            (By.XPATH, "//div[contains(@class,'issuesList')]//div[contains(@class,'issue')]"),
+            wait_timeout)
+    except TimeoutException:
+        webdriver.refresh()
+        page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
+        page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#bugs")
+        print('TimeoutException handled')
 
     @print_timing("selenium_view_testio_specific_bug")
     def measure():
