@@ -321,43 +321,42 @@ def app_send_request_testio_bug(webdriver):
             webdriver.refresh()
             print('ElementClickInterceptedException handled')
 
+    for j in range(number_of_attempts):
+        try:
+            number_of_issues = len(page.get_elements(
+                (By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]")))
+            for i in range(2, number_of_issues):
+                page.wait_until_visible(
+                    (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                    wait_timeout)
+                if "disabled" in page.get_element(
+                        (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']")) \
+                        .get_attribute('class'):
+                    page.get_elements((By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]"))[
+                        i].click()
+
+                else:
+                    break
+        except TimeoutException:
+            webdriver.refresh()
+            page.wait_until_visible((By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                                    wait_timeout)
+            print('TimeoutException handled')
+        except ElementClickInterceptedException:
+            webdriver.refresh()
+            page.wait_until_visible((By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+                                    wait_timeout)
+            print('ElementClickInterceptedException handled')
+
     @print_timing("selenium_app_send_request_testio_bug")
     def measure():
-        for j in range(number_of_attempts):
-            try:
-                number_of_issues = len(page.get_elements(
-                    (By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]")))
-                for i in range(2, number_of_issues):
-                    page.wait_until_visible(
-                        (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
-                        wait_timeout)
-                    if "disabled" in page.get_element(
-                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']")) \
-                            .get_attribute('class'):
-                        page.get_elements((By.XPATH, "//div[contains(@class,'issue') and contains(@class,'false')]"))[
-                            i].click()
-
-                    else:
-                        page.wait_until_visible(
-                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
-                            wait_timeout).click()
-                        page.wait_until_visible((By.XPATH, "//textarea[@name='comment']"), wait_timeout) \
-                            .send_keys("User request")
-                        page.wait_until_visible((By.XPATH, "//span[@type='button' and text()='Send']"),
-                                                wait_timeout).click()
-                        break
-                break
-            except TimeoutException:
-                webdriver.refresh()
-                page.wait_until_visible((By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
-                                        wait_timeout)
-                print('TimeoutException handled')
-            except ElementClickInterceptedException:
-                webdriver.refresh()
-                page.wait_until_visible((By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
-                                        wait_timeout)
-                print('ElementClickInterceptedException handled')
-
+        page.wait_until_visible(
+            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Send Request']"),
+            wait_timeout).click()
+        page.wait_until_visible((By.XPATH, "//textarea[@name='comment']"), wait_timeout) \
+            .send_keys("User request")
+        page.wait_until_visible((By.XPATH, "//span[@type='button' and text()='Send']"),
+                                wait_timeout).click()
     measure()
 
 
