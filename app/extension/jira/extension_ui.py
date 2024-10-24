@@ -10,9 +10,10 @@ from selenium_ui.jira.pages.pages import Login
 from util.conf import JIRA_SETTINGS
 
 project_key = 'AASSS'
-wait_timeout = 5
-small_wait_timeout = 50
+wait_timeout = 20
+small_wait_timeout = 70
 number_of_attempts = 10
+env_url = 'https://www.google.com/'
 
 
 def create_exploratory_test(webdriver):
@@ -50,9 +51,9 @@ def create_exploratory_test(webdriver):
             .move_to_element(
             page.get_element((By.XPATH,
                               "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),'Jira')]")
-                             )) .click(page.get_element((By.XPATH,
-                                     "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),"
-                                     "'Jira')]"))).perform()
+                             )).click(page.get_element((By.XPATH,
+                                                        "//label[text()='Product']/..//div[contains(@class, 'item') and contains(text(),"
+                                                        "'Jira')]"))).perform()
 
     measure()
 
@@ -71,16 +72,39 @@ def create_exploratory_test(webdriver):
 
     @print_timing("selenium_create_exploratory_test:select_test_type")
     def measure():
-        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), wait_timeout)
+        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
         page.wait_until_visible((By.XPATH, "//span[contains(@class, 'coverage')]/.."), wait_timeout).click()
 
     measure()
 
-    @print_timing("selenium_create_exploratory_test:fill_test_data")
+    @print_timing("selenium_create_exploratory_test:select_test_features")
     def measure():
-        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), wait_timeout)
+        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
         page.wait_until_visible((By.XPATH, "//input[@name='test_title']"), wait_timeout).send_keys(
             test_title)
+        page.wait_until_visible((By.XPATH, "//div[contains(@class,'featureCheckbox')]"),
+                                wait_timeout)
+        page.get_elements((By.XPATH, "//div[contains(@class,'featureCheckbox')]"))[1].click()
+
+    measure()
+
+    @print_timing("selenium_create_exploratory_test:create_new_environment")
+    def measure():
+        page.wait_until_visible((By.XPATH, "//div[contains(@class,'environmentField')]//span[@type='button']"),
+                                wait_timeout).click()
+        page.wait_until_visible((By.XPATH, "//input[@name='title']"), wait_timeout).send_keys(
+            test_title)
+        page.wait_until_visible((By.XPATH, "//input[@name='url']"), wait_timeout).send_keys(
+            env_url)
+        page.wait_until_clickable((By.XPATH, "//span[text()='Create']"), wait_timeout).click()
+        page.wait_until_invisible((By.XPATH, "//div[text()='Create Test Environment']"
+                                             "/following-sibling::div//span[text()='Cancel']"), wait_timeout)
+
+    measure()
+
+    @print_timing("selenium_create_exploratory_test:select_environment")
+    def measure():
+        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
         page.wait_until_visible((By.XPATH, "//label[text()='Environment']/../div"),
                                 wait_timeout).click()
         page.wait_until_visible(
@@ -89,9 +113,6 @@ def create_exploratory_test(webdriver):
         page.get_elements(
             (By.XPATH, "//label[text()='Environment']/..//div[contains(@class,'item')]"))[
             1].click()
-        page.wait_until_visible((By.XPATH, "//div[contains(@class,'featureCheckbox')]"),
-                                wait_timeout)
-        page.get_elements((By.XPATH, "//div[contains(@class,'featureCheckbox')]"))[1].click()
 
     measure()
 
@@ -121,7 +142,8 @@ def view_exploratory_test(webdriver):
             page.wait_until_visible((By.ID, "tio_menu-item_exploratory-tests"), wait_timeout).click()
             page.wait_until_visible(
                 (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), wait_timeout)
-            page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
+            page.wait_until_visible((By.XPATH, "//div[contains(@class,'test')]//span[contains(@class,'title')]"),
+                                    wait_timeout)
             break
         except TimeoutException:
             page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
@@ -131,8 +153,9 @@ def view_exploratory_test(webdriver):
 
     @print_timing("selenium_view_exploratory_test:open_test")
     def measure():
-        page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
-        page.get_elements((By.XPATH, "//span[text()='View']"))[1].click()
+        page.wait_until_visible((By.XPATH, "//div[contains(@class,'test')]//span[contains(@class,'title')]"),
+                                wait_timeout)
+        page.get_elements((By.XPATH, "//div[contains(@class,'test')]//span[contains(@class,'title')]"))[1].click()
 
     measure()
 
@@ -144,8 +167,9 @@ def view_exploratory_test(webdriver):
             webdriver.refresh()
             page.wait_until_visible(
                 (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), 10).click()
-            page.wait_until_visible((By.XPATH, "//span[text()='View']"), wait_timeout)
-            page.get_elements((By.XPATH, "//span[text()='View']"))[1].click()
+            page.wait_until_visible((By.XPATH, "//div[contains(@class,'test')]//span[contains(@class,'title')]"),
+                                    wait_timeout)
+            page.get_elements((By.XPATH, "///div[contains(@class,'test')]//span[contains(@class,'title')]"))[1].click()
             print('TimeoutException handled')
 
     @print_timing("selenium_view_exploratory_test:check_sections_present")
@@ -181,13 +205,6 @@ def view_user_stories(webdriver):
             page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
             page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#stories")
             print('TimeoutException handled')
-
-    @print_timing("selenium_view_user_stories:open_stories_page")
-    def measure():
-        page.wait_until_visible(
-            (By.XPATH, "//div[contains(@class,'title') and contains(text(),'User Stories')]"),
-            small_wait_timeout).click()
-    measure()
 
     for k in range(number_of_attempts):
         try:
@@ -259,7 +276,7 @@ def app_change_severity_testio_bug(webdriver):
                                     wait_timeout)
             page.wait_until_visible(
                 (By.XPATH, "//span[contains(@class, 'secondary') and text()='More']"),
-                number_of_attempts).click()
+                number_of_attempts)
             break
         except TimeoutException:
             webdriver.refresh()
@@ -274,7 +291,10 @@ def app_change_severity_testio_bug(webdriver):
                 for i in range(2, number_of_issues):
                     try:
                         page.wait_until_visible(
-                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Change severity']"),
+                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='More']"),
+                            number_of_attempts).click()
+                        page.wait_until_visible(
+                            (By.XPATH, "//span[contains(@class, 'secondary') and text()='Change Severity']"),
                             number_of_attempts).click()
                         page.wait_until_visible((By.XPATH, "//input[@name='new_severity']/.."), wait_timeout).click()
                         page.wait_until_visible(
@@ -357,6 +377,7 @@ def app_send_request_testio_bug(webdriver):
             .send_keys("User request")
         page.wait_until_visible((By.XPATH, "//span[@type='button' and text()='Send']"),
                                 wait_timeout).click()
+
     measure()
 
 
@@ -394,4 +415,3 @@ def view_testio_specific_bug(webdriver):
             wait_timeout)
 
     measure()
-
