@@ -96,22 +96,20 @@ def create_exploratory_test(webdriver):
             test_title)
         page.wait_until_visible((By.XPATH, "//input[@name='url']"), wait_timeout).send_keys(
             env_url)
-        page.wait_until_clickable((By.XPATH, "//span[text()='Create']"), wait_timeout).click()
-        page.wait_until_invisible((By.XPATH, "//div[text()='Create Test Environment']"
-                                             "/following-sibling::div//span[text()='Cancel']"), wait_timeout)
-
+        page.wait_until_clickable((By.XPATH, "//div[text()='Create Test Environment']"
+                                             "/following-sibling::div//span[text()='Cancel']"), wait_timeout).click()
     measure()
+
+    page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
+    page.wait_until_visible((By.XPATH, "//label[text()='Environment']/../div"), wait_timeout)
 
     @print_timing("selenium_create_exploratory_test:select_environment")
     def measure():
-        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
         page.wait_until_visible((By.XPATH, "//label[text()='Environment']/../div"),
                                 wait_timeout).click()
-        page.wait_until_visible(
-            (By.XPATH, "//label[text()='Environment']/..//div[contains(@class,'item')]"),
-            wait_timeout)
-        page.get_elements(
-            (By.XPATH, "//label[text()='Environment']/..//div[contains(@class,'item')]"))[
+        page.wait_until_visible((By.XPATH, "//label[text()='Environment']/..//div[contains(@class,'item')]"),
+                                wait_timeout)
+        page.get_elements((By.XPATH, "//label[text()='Environment']/..//div[contains(@class,'item')]"))[
             1].click()
 
     measure()
@@ -398,20 +396,16 @@ def view_testio_specific_bug(webdriver):
             webdriver.refresh()
             print('TimeoutException handled')
 
-    try:
-        page.wait_until_visible(
-            (By.XPATH, "//div[contains(@class,'issuesList')]//div[contains(@class,'issue')]"),
-            wait_timeout)
-    except TimeoutException:
-        webdriver.refresh()
-        page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
-        page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#bugs")
-        print('TimeoutException handled')
-
     @print_timing("selenium_view_testio_specific_bug")
     def measure():
-        page.wait_until_visible(
-            (By.XPATH, "//div[contains(@class,'issuesList')]//div[contains(@class,'issue')]"),
-            wait_timeout)
+        try:
+            page.wait_until_visible(
+                (By.XPATH, "//div[contains(@class,'issuesList')]//div[contains(@class,'issue')]"),
+                wait_timeout)
+        except TimeoutException:
+            webdriver.refresh()
+            page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/issues")
+            page.go_to_url(f"{JIRA_SETTINGS.server_url}/projects/{project_key}/test-io-issues#bugs")
+            print('TimeoutException handled')
 
     measure()
