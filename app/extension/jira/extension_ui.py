@@ -9,7 +9,7 @@ from selenium_ui.conftest import print_timing
 from selenium_ui.jira.pages.pages import Login
 from util.conf import JIRA_SETTINGS
 
-project_key = 'AASSS'
+project_key = 'AAS'
 wait_timeout = 20
 small_wait_timeout = 70
 number_of_attempts = 10
