@@ -96,8 +96,17 @@ def create_exploratory_test(webdriver):
             test_title)
         page.wait_until_visible((By.XPATH, "//input[@name='url']"), wait_timeout).send_keys(
             env_url)
-        page.wait_until_clickable((By.XPATH, "//div[text()='Create Test Environment']"
-                                             "/following-sibling::div//span[text()='Cancel']"), wait_timeout).click()
+
+        for m in range(number_of_attempts):
+            try:
+                page.wait_until_clickable((By.XPATH, "//div[text()='Create Test Environment']"
+                                                     "/following-sibling::div//span[text()='Cancel']"),
+                                          wait_timeout).click()
+                break
+            except ElementClickInterceptedException:
+                page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
+                print('ElementClickInterceptedException handled')
+
     measure()
 
     page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
