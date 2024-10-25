@@ -176,7 +176,7 @@ def view_exploratory_test(webdriver):
                 (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Exploratory Tests')]"), 10).click()
             page.wait_until_visible((By.XPATH, "//div[contains(@class,'test')]//span[contains(@class,'title')]"),
                                     wait_timeout)
-            page.get_elements((By.XPATH, "///div[contains(@class,'test')]//span[contains(@class,'title')]"))[1].click()
+            page.get_elements((By.XPATH, "//div[contains(@class,'test')]//span[contains(@class,'title')]"))[1].click()
             print('TimeoutException handled')
 
     @print_timing("selenium_view_exploratory_test:check_sections_present")
