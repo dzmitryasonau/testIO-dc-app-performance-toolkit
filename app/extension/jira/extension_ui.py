@@ -70,16 +70,18 @@ def create_exploratory_test(webdriver):
 
     measure()
 
+    page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
+
     @print_timing("selenium_create_exploratory_test:select_test_type")
     def measure():
-        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
         page.wait_until_visible((By.XPATH, "//span[contains(@class, 'coverage')]/.."), wait_timeout).click()
 
     measure()
 
+    page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
+
     @print_timing("selenium_create_exploratory_test:select_test_features")
     def measure():
-        page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
         page.wait_until_visible((By.XPATH, "//input[@name='test_title']"), wait_timeout).send_keys(
             test_title)
         page.wait_until_visible((By.XPATH, "//div[contains(@class,'featureCheckbox')]"),
@@ -97,17 +99,17 @@ def create_exploratory_test(webdriver):
         page.wait_until_visible((By.XPATH, "//input[@name='url']"), wait_timeout).send_keys(
             env_url)
 
-        for m in range(number_of_attempts):
-            try:
-                page.wait_until_clickable((By.XPATH, "//div[text()='Create Test Environment']"
-                                                     "/following-sibling::div//span[text()='Cancel']"),
-                                          wait_timeout).click()
-                break
-            except ElementClickInterceptedException:
-                page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
-                print('ElementClickInterceptedException handled')
-
     measure()
+
+    for m in range(number_of_attempts):
+        try:
+            page.wait_until_clickable((By.XPATH, "//div[text()='Create Test Environment']"
+                                                 "/following-sibling::div//span[text()='Cancel']"),
+                                      wait_timeout).click()
+            break
+        except ElementClickInterceptedException:
+            page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
+            print('ElementClickInterceptedException handled')
 
     page.wait_until_invisible((By.XPATH, "//div[contains(@class, 'loader')]"), small_wait_timeout)
     page.wait_until_visible((By.XPATH, "//label[text()='Environment']/../div"), wait_timeout)
