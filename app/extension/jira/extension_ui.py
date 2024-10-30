@@ -254,6 +254,9 @@ def app_accept_testio_bug(webdriver):
             page.wait_until_visible(
                 (By.XPATH, "//div[contains(@class,'title') and contains(text(),'Received Bugs')]"),
                 wait_timeout)
+            page.wait_until_clickable(
+                (By.XPATH,  "//div[contains(@class,'issueDetails')]//span[contains(@class, 'accept')]"),
+                wait_timeout)
             break
         except TimeoutException:
             webdriver.refresh()
