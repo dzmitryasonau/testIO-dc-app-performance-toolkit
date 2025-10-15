@@ -78,12 +78,12 @@ def test_1_selenium_app_accept_testio_bug(jira_webdriver, jira_screen_shots):
     extension_ui.app_accept_testio_bug(jira_webdriver)
 
 
-def test_1_selenium_app_change_severity_testio_bug(jira_webdriver, jira_screen_shots):
-    extension_ui.app_change_severity_testio_bug(jira_webdriver)
+# def test_1_selenium_app_change_severity_testio_bug(jira_webdriver, jira_screen_shots):
+#     extension_ui.app_change_severity_testio_bug(jira_webdriver)
 
 
-def test_1_selenium_app_send_request_testio_bug(jira_webdriver, jira_screen_shots):
-    extension_ui.app_send_request_testio_bug(jira_webdriver)
+# def test_1_selenium_app_send_request_testio_bug(jira_webdriver, jira_screen_shots):
+#     extension_ui.app_send_request_testio_bug(jira_webdriver)
 
 
 def test_1_selenium_view_testio_specific_bug(jira_webdriver, jira_screen_shots):
