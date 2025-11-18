@@ -61,33 +61,54 @@ Write your custom selenium scripts in `app/extension/jira/extension_ui.py`.
 Refer to `app/selenium_ui/jira/modules.py` for examples.
 """
 
+"""
+Start of TestIO plugin part
+"""
 
-def test_1_selenium_create_exploratory_test(jira_webdriver, jira_screen_shots):
-    extension_ui.create_exploratory_test(jira_webdriver)
-
-
-def test_1_selenium_view_exploratory_test(jira_webdriver, jira_screen_shots):
-    extension_ui.view_exploratory_test(jira_webdriver)
-
-
-def test_1_selenium_view_user_stories(jira_webdriver, jira_screen_shots):
-    extension_ui.view_user_stories(jira_webdriver)
-
-
-def test_1_selenium_app_accept_testio_bug(jira_webdriver, jira_screen_shots):
-    extension_ui.app_accept_testio_bug(jira_webdriver)
+# def test_1_selenium_create_exploratory_test(jira_webdriver, jira_screen_shots):
+#     extension_ui.create_exploratory_test(jira_webdriver)
+#
+#
+# def test_1_selenium_view_exploratory_test(jira_webdriver, jira_screen_shots):
+#     extension_ui.view_exploratory_test(jira_webdriver)
+#
+#
+# def test_1_selenium_view_user_stories(jira_webdriver, jira_screen_shots):
+#     extension_ui.view_user_stories(jira_webdriver)
+#
+#
+# def test_1_selenium_app_accept_testio_bug(jira_webdriver, jira_screen_shots):
+#     extension_ui.app_accept_testio_bug(jira_webdriver)
+#
+#
+# def test_1_selenium_view_testio_specific_bug(jira_webdriver, jira_screen_shots):
+#     extension_ui.view_testio_specific_bug(jira_webdriver)
 
 
 # def test_1_selenium_app_change_severity_testio_bug(jira_webdriver, jira_screen_shots):
 #     extension_ui.app_change_severity_testio_bug(jira_webdriver)
-
-
+#
+#
 # def test_1_selenium_app_send_request_testio_bug(jira_webdriver, jira_screen_shots):
 #     extension_ui.app_send_request_testio_bug(jira_webdriver)
 
-
-def test_1_selenium_view_testio_specific_bug(jira_webdriver, jira_screen_shots):
-    extension_ui.view_testio_specific_bug(jira_webdriver)
+"""
+Start of EWORK plugin part
+"""
+# def test_1_selenium_check_create_project_option(jira_webdriver, jira_screen_shots):
+#     extension_ui.check_create_project_option(jira_webdriver)
+#
+#
+# def test_1_selenium_project_creation(jira_webdriver, jira_screen_shots):
+#     extension_ui.check_project_creation(jira_webdriver)
+#
+#
+# def test_1_selenium_project_edit(jira_webdriver, jira_screen_shots):
+#     extension_ui.check_edit_project(jira_webdriver)
+#
+#
+# def test_1_selenium_task_creation(jira_webdriver, jira_screen_shots):
+#     extension_ui.check_task_creation(jira_webdriver)
 
 
 # this action should be the last one
